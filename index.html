@@ -4,8 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <title>The Daily Bugle - Edición Especial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @media (max-width: 600px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .article {
+                border-right: none;
+                padding-right: 0;
+            }
+
+            header h1 {
+                font-size: 40px;
+            }
+        }
+
         body {
             font-family: 'Courier New', Courier, monospace;
             background-color: #f4f4f4;
@@ -213,6 +229,9 @@
     </audio>
 
     <script>
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.parentElement.offsetWidth;
+        });
         document.getElementById('current-date').innerText = "EDICIÓN ESPECIAL: " + new Date().toLocaleDateString('es-ES', {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         }).toUpperCase();
@@ -323,7 +342,7 @@
                 ctxGame.fillStyle = "white";
                 ctxGame.fillRect(zombie.x + 5, zombie.y + 5, 5, 5);
                 ctxGame.fillRect(zombie.x + zombie.w - 10, zombie.y + 5, 5, 5);
-            
+
                 bullets.forEach((bullet, bIndex) => {
                     if (bullet.x > zombie.x && bullet.x < zombie.x + zombie.w &&
                         bullet.y > zombie.y && bullet.y < zombie.y + zombie.h) {

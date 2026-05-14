@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Daily Bugle - Edición Especial</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f4f4f4;
+            padding: 20px;
+            transition: background-color 0.3s;
+            outline: none;
+            overflow-x: hidden;
+        }
+
+        .newspaper {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            border: 2px solid #000;
+            padding: 20px;
+            box-shadow: 10px 10px 0px #333;
+        }
+
+        header {
+            border-bottom: 5px double #000;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 60px;
+            margin: 0;
+            text-transform: uppercase;
+            font-family: 'Impact', sans-serif;
+            color: #000;
+        }
+
+        .headline {
+            text-align: center;
+            font-weight: bold;
+            font-size: 28px;
+            color: #d32f2f;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .article {
+            border-right: 1px solid #ddd;
+            padding-right: 20px;
+        }
+
+        .sidebar {
+            background: #eee;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .btn-mj {
+            background: #d32f2f;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+            font-family: 'Impact', sans-serif;
+            letter-spacing: 1px;
+        }
+
+
+        canvas {
+            max-width: 100%;
+            margin-top: 10px;
+            background: #fff;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #ffffff;
+            border: 1px solid #000;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        #zombieGame {
+            display: block;
+        }
+
+        #gameUI {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #d32f2f;
+            font-family: 'Impact', sans-serif;
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        #startBtn {
+            z-index: 10;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: 'Impact', sans-serif;
+        }
+
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            padding: 30px;
+            border: 4px solid #d32f2f;
+            text-align: center;
+            max-width: 80%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
+            font-family: 'Impact', sans-serif;
+            color: #d32f2f;
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+
+        .modal-content p {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="newspaper">
+        <header>
+            <p id="current-date"></p>
+            <h1>THE DAILY BUGLE</h1>
+        </header>
+
+        <div class="headline">
+            "ESTUDIANTE DE MEDICINA SALVA EL DÍA CON SOLO SONREÍR"
+        </div>
+
+        <div class="content">
+            <div class="article">
+                <h3>Reporte de Campo</h3>
+                <p>Fuentes cercanas aseguran que hoy es un día feriado no oficial. El sujeto de estudio muestra niveles
+                    de "increibilidad" fuera de los rangos normales de la medicina moderna...</p>
+                <div class="game-container">
+                    <canvas id="zombieGame"></canvas>
+                    <div id="gameUI">Puntos: <span id="score">0</span></div>
+                    <button id="startBtn" onclick="startGame()">EMPEZAR JUEGO</button>
+                </div>
+                <div id="gameOverScreen">
+                    <div class="modal-content">
+                        <h2>¡JUEGO TERMINADO!</h2>
+                        <p>Puntaje: <span id="finalScore">0</span></p>
+                        <p style="font-style: italic; color: #d32f2f; font-size: 14px;">
+                            "No eres tan bueno en todo eh..."
+                        </p>
+                        <button class="btn-mj" onclick="startGame()">REINTENTAR</button>
+                    </div>
+                </div>
+                <p><em>Actualización:</em> El Dr. Connors afirma que no hay cura para este nivel de carisma.</p>
+            </div>
+
+            <div class="sidebar">
+                <h4>Diagnóstico Médico</h4>
+                <p>Ritmo cardíaco: <strong>Crítico (MJ Style)</strong></p>
+
+                <canvas id="heartChart" width="200" height="150"></canvas>
+                <p>Análisis: Sangre tipo "Héroe"</p>
+                <hr>
+                <h4>Playlist de Oscorp</h4>
+                <button class="btn-mj" onclick="initExperience()">ACTIVAR MOONWALK</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bgMusic">
+        <source src="you-rock-my-world.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <script>
+        document.getElementById('current-date').innerText = "EDICIÓN ESPECIAL: " + new Date().toLocaleDateString('es-ES', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        }).toUpperCase();
+
+        const ctxHeart = document.getElementById('heartChart').getContext('2d');
+        let dataPoints = [70, 70, 70, 70, 70, 70, 70, 70, 70, 70];
+
+        const heartChart = new Chart(ctxHeart, {
+            type: 'line',
+            data: {
+                labels: new Array(10).fill(''),
+                datasets: [{
+                    data: dataPoints,
+                    borderColor: '#d32f2f',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                animation: false,
+                scales: {
+                    y: { display: true, min: 50, max: 160 },
+                    x: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        function animateHeart() {
+            const ekgSequence = [75, 70, 65, 150, 50, 70, 85, 70, 70, 70];
+            let seqIndex = 0;
+            let isBeating = false;
+
+            setInterval(() => {
+                dataPoints.shift();
+                let newValue = 70;
+                if (!isBeating && Math.random() > 0.7) { isBeating = true; seqIndex = 0; }
+                if (isBeating) {
+                    newValue = ekgSequence[seqIndex];
+                    seqIndex++;
+                    if (seqIndex >= ekgSequence.length) isBeating = false;
+                }
+                dataPoints.push(newValue);
+                heartChart.update();
+            }, 100);
+        }
+
+        const canvas = document.getElementById('zombieGame');
+        const ctxGame = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = 300;
+
+        const COLORS = {
+            RED: '#d32f2f',
+            BLACK: '#000000',
+            GRAY: '#333333',
+            PAPER: '#ffffff'
+        };
+
+        let score = 0;
+        let gameActive = false;
+        let bullets = [];
+        let zombies = [];
+        let player = { x: canvas.width / 2, y: canvas.height - 50, w: 40, h: 40 };
+
+        function startGame() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'none';
+            gameActive = true;
+            score = 0;
+            bullets = [];
+            zombies = [];
+
+            document.getElementById('score').innerText = score;
+            ctxGame.clearRect(0, 0, canvas.width, canvas.height);
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+            ctxGame.fillStyle = COLORS.PAPER;
+            ctxGame.fillRect(0, 0, canvas.width, canvas.height);
+            ctxGame.fillStyle = COLORS.RED;
+            ctxGame.fillRect(player.x - player.w / 2, player.y, player.w, player.h);
+            ctxGame.fillStyle = COLORS.BLACK;
+            ctxGame.fillRect(player.x - player.w / 2, player.y, player.w, 10);
+
+            bullets.forEach((bullet, bIndex) => {
+                bullet.y -= 6;
+                ctxGame.fillStyle = COLORS.RED;
+                ctxGame.font = "bold 22px Courier New";
+                ctxGame.fillText("♪", bullet.x, bullet.y);
+                if (bullet.y < 0) bullets.splice(bIndex, 1);
+            });
+
+            if (Math.random() < 0.02) {
+                zombies.push({ x: Math.random() * (canvas.width - 30), y: -30, w: 30, h: 30 });
+            }
+
+            zombies.forEach((zombie, zIndex) => {
+                zombie.y += 2;
+                ctxGame.fillStyle = COLORS.BLACK;
+                ctxGame.fillRect(zombie.x, zombie.y, zombie.w, zombie.h);
+
+                ctxGame.fillStyle = "white";
+                ctxGame.fillRect(zombie.x + 5, zombie.y + 5, 5, 5);
+                ctxGame.fillRect(zombie.x + zombie.w - 10, zombie.y + 5, 5, 5);
+            
+                bullets.forEach((bullet, bIndex) => {
+                    if (bullet.x > zombie.x && bullet.x < zombie.x + zombie.w &&
+                        bullet.y > zombie.y && bullet.y < zombie.y + zombie.h) {
+                        zombies.splice(zIndex, 1);
+                        bullets.splice(bIndex, 1);
+                        score += 10;
+                        scoreEl.innerText = score;
+                    }
+                });
+
+                if (zombie.y + zombie.h > player.y &&
+                    zombie.x < player.x + 20 && zombie.x + zombie.w > player.x - 20) {
+                    gameActive = false;
+                    const modal = document.getElementById('gameOverScreen');
+                    document.getElementById('finalScore').innerText = score;
+                    modal.style.display = 'flex';
+                    return;
+                }
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+        function initExperience() {
+            const music = document.getElementById('bgMusic');
+            document.body.classList.add('spidey-alert');
+            heartChart.data.datasets[0].borderColor = '#ffd700';
+            heartChart.data.datasets[0].borderWidth = 4;
+            animateHeart();
+            music.volume = 0.3;
+            music.play().catch(e => console.log("Interacción requerida para audio"));
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            player.x = e.clientX - rect.left;
+        });
+
+        canvas.addEventListener('click', () => {
+            if (gameActive) bullets.push({ x: player.x, y: player.y });
+        });
+    </script>
+
+</body>
+
+</html>
